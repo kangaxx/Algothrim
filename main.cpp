@@ -284,6 +284,100 @@ void DoHeapSort(const int *in)
 }
 
 
+//***************************************************************************************************************************//
+//                                                                                                                           //
+//                                                         Quick Sort                                                        //
+//                                                                                                                           //
+//***************************************************************************************************************************//
+int Parition(int Target[],int BeginIdx,int EndIdx)
+{
+    int i = BeginIdx;
+    int r = Target[EndIdx];
+    int Compare[INT_DATA_LEN];
+    for (int j = BeginIdx;j<EndIdx;j++)
+    {
+        if (Target[j] < r)
+        {
+
+            if (i != j)
+            {
+                for (int k = 0;k<=j;k++)
+                    Compare[k]=Target[k];
+                swap(Target[i],Target[j]);
+                CompareData(Compare,Target,i,j,j+1);
+            }
+            else
+            {
+                cout << "============================ i Equal j ============================" << endl;
+                cout << "i is :[" << i << "] and j is :[" << j << "]" << endl;
+                for (int l=0;l<=j;l++)
+                    cout << "Data[" << l<< "] is : [" << Target[l] << "]" << endl;
+                cout << "============================ i Equal j ============================" << endl;
+            }
+            i++;
+            cout << "i is " << i << " and j is " << j << endl;
+        }
+
+    }
+    for (int k = 0;k<=EndIdx;k++)
+        Compare[k]=Target[k];
+    swap(Target[i],Target[EndIdx]);
+    CompareData(Compare,Target,i,EndIdx,EndIdx+1);
+    return i;
+}
+
+
+void QuickSort(const int *in,int Target[],int BeginIdx, int EndIdx)
+{
+    cout << "bg is : " << BeginIdx << " and ed is : " << EndIdx << endl;
+    if (BeginIdx < EndIdx)
+    {
+
+        int t = Parition(Target,BeginIdx,EndIdx);
+        cout << "t is :[" << t << "]" << endl;
+        QuickSort(in,Target,BeginIdx,t-1);
+        QuickSort(in,Target,t+1,EndIdx);
+    }
+}
+
+void DoQuickSort(const int *in)
+{
+    int Temp[INT_DATA_LEN];
+    for (int i = 0;i < INT_DATA_LEN;i++)
+        Temp[i] = in[i];
+    QuickSort(in,Temp,0,(INT_DATA_LEN-1));
+    cout << "The finial int list is : " << endl;
+    for (int j = 0; j < INT_DATA_LEN;j++)
+        cout << "Data[" << j << "] : " << Temp[j] << endl;
+}
+
+//***************************************************************************************************************************//
+//                                                                                                                           //
+//                                                         Bubble  Sort                                                      //
+//                                                                                                                           //
+//***************************************************************************************************************************//
+
+void DoBubbleSort(const int *in)
+{
+    int Temp[INT_DATA_LEN];
+    for (int k = 0;k< INT_DATA_LEN;k++)
+        Temp[k] = in[k];
+    int Compare[INT_DATA_LEN];
+    for (int i = 0; i<INT_DATA_LEN;i++)
+        for (int j = 0; j < (INT_DATA_LEN-i-1);j++)
+            if (Temp[j]> Temp[j+1])
+            {
+                for(int x = 0; x < INT_DATA_LEN; x++)
+                    Compare[x] = Temp[x];
+                int t = Temp[j];
+                Temp[j] = Temp[j+1];
+                Temp[j+1] = t;
+                CompareData(Compare,Temp,j,j+1,INT_DATA_LEN);
+            }
+
+
+}
+
 int main()
 {
 
@@ -344,6 +438,12 @@ int main()
             break;
         case 4:
             DoHeapSort(temp);
+            break;
+        case 5:
+            DoQuickSort(temp);
+            break;
+        case 6:
+            DoBubbleSort(temp);
             break;
         default:
             break;
