@@ -2,9 +2,14 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
+#include <math.h>
+
 using namespace std;
 #define INT_DATA_LEN 10
 #define INT_MAX_RANDOM (INT_DATA_LEN*10)
+#define INT_BUCKET_SIZE 10
+const int CountOfBucket = INT_MAX_RANDOM / INT_BUCKET_SIZE;
+
 void CompareData(const int *before, const int *after, int ChangePos1, int ChangePos2, int Size = INT_DATA_LEN);
 void CompareData2(const int *before, const int *after , int ChangePosBef, int ChangePosAft, int EndIdx);
 string IntToSortName(int in)
@@ -78,7 +83,7 @@ void CompareData(const int *before, const int *after, int ChangePos1,int ChangeP
 void CompareData2(const int *before, const int *after, int ChangePosBef, int ChangePosAft, int EndIdx)
 {
     cout << "================== BEGIN =====================" << endl;
-    for (int i=0;i<=EndIdx;i++)
+    for (int i=0;i<EndIdx;i++)
     {
         cout << "Origin Data[" << i << "] is : " << (*before++) << (i==(ChangePosBef)?"<=== From":"         ");
         cout<<" and new Data[" << i << "] is : " << (*after++) << (i==(ChangePosAft)?"<===  To ":"         ") ;
@@ -170,12 +175,12 @@ void Merge(const int Source[],int Target[],int StartIdx,int EndIdx, int MidIdx)
         if (Source[StartIdx]<=Source[j])
         {
             Target[i]= Source[StartIdx++];
-            CompareData2(Source,Target,(StartIdx-1),i,EndIdx);
+            CompareData2(Source,Target,(StartIdx-1),i,EndIdx+1);
         }
         else
         {
             Target[i]= Source[j++];
-            CompareData2(Source,Target,(j-1),i,EndIdx);
+            CompareData2(Source,Target,(j-1),i,EndIdx+1);
         }
 
     }
@@ -185,7 +190,7 @@ void Merge(const int Source[],int Target[],int StartIdx,int EndIdx, int MidIdx)
         for (k = 0; k<= (MidIdx-StartIdx);k++)
         {
             Target[i+k] = Source[StartIdx+k];
-            CompareData2(Source,Target,(StartIdx+k),i+k,EndIdx);
+            CompareData2(Source,Target,(StartIdx+k),i+k,EndIdx+1);
         }
     }
 
@@ -194,7 +199,7 @@ void Merge(const int Source[],int Target[],int StartIdx,int EndIdx, int MidIdx)
         for (k = 0;k<= (EndIdx-j);k++)
         {
             Target[i+k] = Source[j+k];
-            CompareData2(Source,Target,(j+k),i+k,EndIdx);
+            CompareData2(Source,Target,(j+k),i+k,EndIdx+1);
         }
     }
 }
@@ -378,9 +383,269 @@ void DoBubbleSort(const int *in)
 
 }
 
+//***************************************************************************************************************************//
+//                                                                                                                           //
+//                                                         Shell   Sort                                                      //
+//                           use 2^k-1 (1,3,7,15....),will got n^(3/2) in the Worst-case time complexity                     //
+//***************************************************************************************************************************//
+
+
+void DoShellSort(const int *in)
+{
+    int gap;
+    int Temp[INT_DATA_LEN];
+    int Compare[INT_DATA_LEN];
+    for (int i = 0; i< INT_DATA_LEN;i++)
+        Temp[i] = in[i];
+    for (gap = INT_DATA_LEN; gap > 0; gap--)
+    {
+        int iT = gap;
+        while (iT % 2 == 0)
+            iT /= 2;
+        if (iT != 1)
+            continue;
+        for (int j = gap; j < INT_DATA_LEN; j++)//从数组第gap个元素开始
+            if (Temp[j] < Temp[j - gap])//每个元素与自己组内的数据进行直接插入排序
+            {
+                int temp = Temp[j];
+                int k = j - gap;
+                while (k >= 0 && Temp[k] > temp)
+                {
+                    for (int t=0;t<INT_DATA_LEN;t++)
+                        Compare[t] = Temp[t];
+                    Temp[k + gap] = Temp[k];
+                    k -= gap;
+                }
+
+                Temp[k + gap] = temp;
+                cout << k << " " << gap << endl;
+                CompareData(Compare,Temp,k+gap,k+2*gap,INT_DATA_LEN);
+
+            }
+    }
+}
+
+//***************************************************************************************************************************//
+//                                                                                                                           //
+//                                                         Comb    Sort                                                      //
+//                                                                                                                           //
+//***************************************************************************************************************************//
+
+void DoCombSort(const int *in)
+{
+    float Shrink = 1.3f;
+
+    bool swapped = false;
+    int Temp[INT_DATA_LEN];
+    for (int i = 0;i<INT_DATA_LEN;i++)
+        Temp[i] = in[i];
+    int Compare[INT_DATA_LEN];
+    int gap=INT_DATA_LEN;
+    while ((gap>1) || swapped)
+    {
+        if (gap>1)
+            gap =  int((float)gap/Shrink);
+        swapped = false;
+        for (int i = 0; i+gap<INT_DATA_LEN;i++)
+        {
+            if (Temp[i]>Temp[i+gap])
+            {
+                for (int j = 0; j<INT_DATA_LEN;j++)
+                    Compare[j] = Temp[j];
+                swap(Temp[i],Temp[i+gap]);
+                CompareData(Compare,Temp,i,i+gap,INT_DATA_LEN);
+                swapped = true;
+            }
+        }
+
+    }
+}
+
+//***************************************************************************************************************************//
+//                                                                                                                           //
+//                                                         Counting    Sort                                                  //
+//                                                                                                                           //
+//***************************************************************************************************************************//
+void MakeCounter(const int *in,int Counter[])
+{
+    for (int i = 0; i<INT_DATA_LEN;i++)
+        Counter[in[i]]++;
+    for (int j = 1;j<INT_MAX_RANDOM;j++)
+        Counter[j] += Counter[j-1];
+    cout << "==================  Show Counter =======================" << endl;
+    for (int k = 0;k<INT_MAX_RANDOM;k++)
+    {
+        if ((k == 0 && Counter[k] > 0) || (Counter[k]> Counter[k-1]))
+            cout << "Counter[" << k << "] : " << Counter[k] << endl;
+    }
+    cout << "==================  Show Counter =======================" << endl;
+}
+
+
+void DoCountingSort(const int *in)
+{
+    int Temp[INT_DATA_LEN];
+    for (int k = 0 ; k<INT_DATA_LEN;k++)
+        Temp[k] = -1;
+    int Counter[INT_MAX_RANDOM]={0};
+    MakeCounter(in,Counter);
+    for (int i = 0; i<INT_DATA_LEN;i++)
+    {
+        Temp[Counter[in[i]]-1] = in[i];
+        CompareData2(in,Temp,i,Counter[in[i]]-1,INT_DATA_LEN);
+        Counter[in[i]]--;
+    }
+}
+
+//***************************************************************************************************************************//
+//                                                                                                                           //
+//                                                         Bucket     Sort                                                   //
+//                                                                                                                           //
+//***************************************************************************************************************************//
+void InitBuckets(int Buckets[CountOfBucket][INT_BUCKET_SIZE])
+{
+    for (int i = 0;i<CountOfBucket;i++)
+        for (int j = 0;j<INT_BUCKET_SIZE;j++)
+            Buckets[i][j] = -1;
+}
+
+int GotBucketNum(int Num)
+{
+    for (int i=0;i<CountOfBucket;i++)
+    {
+        if (Num >= i*INT_BUCKET_SIZE && Num < (i+1)*INT_BUCKET_SIZE)
+            return i;
+    }
+    return -1;
+}
+
+void SortBucket(int Buckets[CountOfBucket][INT_BUCKET_SIZE],int BucketNum,int Num)
+{
+    int t;
+    for (int i = 0 ; i<INT_BUCKET_SIZE;i++)
+    {
+        if (Buckets[BucketNum][i] == -1)
+        {
+            Buckets[BucketNum][i] = Num;
+            break;
+        }
+        else if (Buckets[BucketNum][i] > Num)
+        {
+            t = Buckets[BucketNum][i];
+            Buckets[BucketNum][i] = Num;
+            Num = t;
+        }
+    }
+    cout << "Insert Num : [" << Num << "]" << "  Bucket{" << BucketNum << "}" << endl;
+    cout << "Bucket{" << BucketNum << "} : " ;
+    for (int j = 0 ; j<INT_BUCKET_SIZE;j++)
+    {
+        if (Buckets[BucketNum][j] == -1)
+            break;
+        cout << "[" << Buckets[BucketNum][j] << "] " ;
+    }
+    cout << endl;
+}
+
+void DoBucketSort(const int *in)
+{
+    int BucketNum;
+    int Buckets[CountOfBucket][INT_BUCKET_SIZE];
+    InitBuckets(Buckets);
+
+    for (int i = 0;i< INT_DATA_LEN;i++)
+    {
+        BucketNum = GotBucketNum(in[i]);
+        SortBucket(Buckets,BucketNum,in[i]);
+    }
+
+    for (int k = 0;k<CountOfBucket;k++)
+    {
+        for (int l= 0; l < INT_BUCKET_SIZE; l++)
+            cout << "[" << Buckets[k][l] << "]" << "  ";
+        cout << endl;
+    }
+}
+
+//***************************************************************************************************************************//
+//                                                                                                                           //
+//                                                         Radix     Sort                                                    //
+//                                                                                                                           //
+//***************************************************************************************************************************//
+void ClearTemp(int Temp[11][INT_DATA_LEN+1])
+{
+    for (int i = 0; i < 10;i++)
+        for (int j = 0;j<=INT_DATA_LEN; j++)
+            Temp[i][j] = 0;
+}
+
+int GetMaxNum(const int *in)
+{
+    int Ret = -1;
+    for (int i = 0;i< INT_DATA_LEN;i++)
+        if (in[i] > Ret)
+            Ret = in[i];
+    return Ret;
+}
+
+void RadixSort_LSD(int Source[],int Temp[11][INT_DATA_LEN+1],int LoopTime,int CurrentLoop)
+{
+    if (LoopTime < CurrentLoop)
+        return;
+    int PickNum;
+    int Num;
+    ClearTemp(Temp);
+    for (int i = 0; i<INT_DATA_LEN; i++)
+    {
+        PickNum = (Source[i] %(int(pow10(CurrentLoop))))/(int)(pow10(CurrentLoop-1));
+        Num = ++Temp[PickNum][0];
+        Temp[PickNum][Num] = Source[i];
+    }
+    int SourceIdx = 0;
+
+    cout << "Loop : " << CurrentLoop << "/" << LoopTime << " :" << endl;
+    for (int i = 0; i < 10; i++)
+    {
+        cout << "Temp{" << i << "} : ";
+        for (int j = 1; j<= Temp[i][0];j++)
+        {
+            cout << "[" << Temp[i][j] << "]   " ;
+            Source[SourceIdx++]   = Temp[i][j];
+        }
+        cout << endl;
+    }
+    cout << endl;
+    cout << "=========================================================" << endl;
+    //resort Source
+    RadixSort_LSD(Source,Temp,LoopTime,CurrentLoop+1);
+
+}
+
+void DoRadixSort(const int *in) //lsd method
+{
+    int Temp[10][INT_DATA_LEN+1];
+    int Source[INT_DATA_LEN];
+    for (int i = 0;i<INT_DATA_LEN;i++)
+        Source[i] = in[i];
+    int LoopTime = 1;
+    int Max = GetMaxNum(in);
+    while (Max > 9)
+    {
+        Max /= 10;
+        LoopTime ++;
+    }
+    RadixSort_LSD(Source,Temp,LoopTime,1);
+    cout << "=========================================================" << endl;
+    cout << "Radix LSD method ,Result is : " << endl;
+    for (int j = 0 ; j< INT_DATA_LEN ;j++)
+        cout << "[" << Source[j] << "]  ";
+    cout << endl;
+    cout << "=========================================================" << endl;
+}
+
 int main()
 {
-
+    exit;
     while(true)
     {
         cout << "There are 11 types Algorithm can be choice :" << endl;
@@ -444,6 +709,21 @@ int main()
             break;
         case 6:
             DoBubbleSort(temp);
+            break;
+        case 7:
+            DoShellSort(temp);
+            break;
+        case 8:
+            DoCombSort(temp);
+            break;
+        case 9:
+            DoCountingSort(temp);
+            break;
+        case 10:
+            DoBucketSort(temp);
+            break;
+        case 11:
+            DoRadixSort(temp);
             break;
         default:
             break;
