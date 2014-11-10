@@ -111,9 +111,7 @@ void DoInsertingSort(const int *in)
         {
             for(int k = 0;k<INT_DATA_LEN;k++)
                 ForCompare[k] = Temp[k];
-            int Swap = Temp[t];
-            Temp[t] = Temp[t-1];
-            Temp[t-1] = Swap;
+            swap(Temp[t],Temp[t-1]);
             t--;
             CompareData(ForCompare,Temp,t,t+1);
         }
