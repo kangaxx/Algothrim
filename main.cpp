@@ -235,11 +235,6 @@ void DoMergeSort(const int *in)
 //                                                                                                                           //
 //***************************************************************************************************************************//
 
-void HeapSort(const int Source[], int Target[])
-{
-
-}
-
 void BuildHeap(const int Source[], int Target[] , int Size)
 {
     int i = 0;
