@@ -361,19 +361,22 @@ void DoBubbleSort(const int *in)
     for (int k = 0;k< INT_DATA_LEN;k++)
         Temp[k] = in[k];
     int Compare[INT_DATA_LEN];
-    for (int i = 0; i<INT_DATA_LEN;i++)
+    int isContinue = 1;
+    for (int i = 0; i<INT_DATA_LEN & isContinue;i++)
+    {
+        isContinue = 0;
+
         for (int j = 0; j < (INT_DATA_LEN-i-1);j++)
             if (Temp[j]> Temp[j+1])
             {
+                isContinue = 1;
                 for(int x = 0; x < INT_DATA_LEN; x++)
                     Compare[x] = Temp[x];
-                int t = Temp[j];
-                Temp[j] = Temp[j+1];
-                Temp[j+1] = t;
+                swap(Temp[j],Temp[j+1]);
                 CompareData(Compare,Temp,j,j+1,INT_DATA_LEN);
             }
 
-
+    }
 }
 
 //***************************************************************************************************************************//
@@ -450,7 +453,6 @@ void DoCombSort(const int *in)
                 swapped = true;
             }
         }
-
     }
 }
 
@@ -636,9 +638,14 @@ void DoRadixSort(const int *in) //lsd method
     cout << "=========================================================" << endl;
 }
 
+//***************************************************************************************************************************//
+//                                                                                                                           //
+//                                                            Main                                                           //
+//                                                                                                                           //
+//***************************************************************************************************************************//
+
 int main()
 {
-    exit;
     while(true)
     {
         cout << "There are 11 types Algorithm can be choice :" << endl;
